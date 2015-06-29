@@ -16,6 +16,7 @@ import junit.framework.Test;
 import junit.textui.TestRunner;
 
 import org.eclipse.emf.compare.ComparePackage;
+import org.eclipse.emf.compare.ide.ui.tests.merge.RemoteNewProjectTests;
 import org.eclipse.emf.compare.ide.ui.tests.merge.RenamedControlledResourceTests;
 import org.eclipse.emf.compare.ide.ui.tests.merge.StrategyRecursiveModelTest;
 import org.eclipse.emf.compare.ide.ui.tests.merge.StrategyRecursiveModelWithDeepProjectTest;
@@ -41,7 +42,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	RenamedControlledResourceTests.class,
 	ThreadedModelResolverResolutionTest.class,
 	GitMergeTest.class,
-	MovedImplicitResourceAmongChangedResourcesTest.class
+	MovedImplicitResourceAmongChangedResourcesTest.class,
+	RemoteNewProjectTests.class,
 	})
 public class GitTests {
 	/**
