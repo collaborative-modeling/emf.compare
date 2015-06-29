@@ -10,26 +10,44 @@
  *******************************************************************************/
 package org.eclipse.emf.compare.egit.internal.adapter;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.egit.core.internal.storage.WorkspaceGitBlobStorage;
 import org.eclipse.egit.core.storage.GitBlobStorage;
-import org.eclipse.emf.compare.ide.utils.IStoragePathProvider;
+import org.eclipse.emf.compare.ide.utils.IStoragePathProvider2;
 
 /**
  * Fixes EGit's storage paths to something we can resolve in the workspace.
  * 
  * @author <a href="mailto:laurent.goubet@obeo.fr">Laurent Goubet</a>
  */
-public class BlobStoragePathProvider implements IStoragePathProvider {
+public class BlobStoragePathProvider implements IStoragePathProvider2 {
 	/** {@inheritDoc} */
 	public IPath computeFixedPath(IStorage storage) {
+		final IPath fixedPath;
+		final GitBlobStorage gitStorage = (GitBlobStorage)storage;
+		if (storage instanceof WorkspaceGitBlobStorage) {
+			fixedPath = ((WorkspaceGitBlobStorage)gitStorage).getWorkspacePath();
+		} else {
+			final IPath absolutePath = gitStorage.getAbsolutePath();
+			final IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+			IFile fileForLocation = root.getFileForLocation(absolutePath);
+			if (fileForLocation != null) {
+				fixedPath = fileForLocation.getFullPath();
+			} else {
+				fixedPath = null;
+			}
+		}
+		return fixedPath;
+	}
+
+	/** {@inheritDoc} */
+	public IPath computeAbsolutePath(IStorage storage) {
 		final GitBlobStorage gitStorage = (GitBlobStorage)storage;
 		final IPath absolutePath = gitStorage.getAbsolutePath();
-		final IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-		// FIXME if the storage is located outside of the workspace, getFileForLocation will return null, and
-		// this call will thus result in NPE. How could we work around that limitation?
-		return root.getFileForLocation(absolutePath).getFullPath();
+		return absolutePath;
 	}
 }
