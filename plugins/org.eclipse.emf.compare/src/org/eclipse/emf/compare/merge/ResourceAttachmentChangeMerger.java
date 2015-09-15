@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.compare.Comparison;
 import org.eclipse.emf.compare.Diff;
@@ -154,16 +153,62 @@ public class ResourceAttachmentChangeMerger extends AbstractMerger {
 					.getID(sourceValue));
 		}
 
+		deleteFormerResourceIfNecessary(comparison, oldResource, rightToLeft);
+	}
+
+	/**
+	 * A move of an EObject to a different resource has just been made. Do whatever post-treatment is needed.
+	 * The default implementation deletes the former resource if it's no longer supposed to be here.
+	 * 
+	 * @param comparison
+	 *            The comparison
+	 * @param oldResource
+	 *            The resource from where the EObject has been moved
+	 * @param rightToLeft
+	 *            The direction of the change
+	 */
+	protected void deleteFormerResourceIfNecessary(final Comparison comparison, final Resource oldResource,
+			boolean rightToLeft) {
 		// If after a move of a {@link ResourceAttachmentChange} the initial resource is empty, we have to
-		// delete this resource
-		EList<EObject> contents = oldResource.getContents();
-		if (contents == null || contents.isEmpty()) {
-			try {
-				oldResource.delete(Collections.emptyMap());
-			} catch (IOException e) {
-				// FIXME log exception.
-			}
+		// delete this resource ONLY IF it does not exist on the target side
+		MatchResource matchResource = getMatchResource(comparison, oldResource);
+		if (!resourceExistsInSource(matchResource, rightToLeft)) {
+			deleteResource(oldResource);
 		}
+	}
+
+	/**
+	 * Delete the given resource.
+	 * 
+	 * @param resource
+	 *            The resource to delete, must not be null.
+	 */
+	protected void deleteResource(final Resource resource) {
+		try {
+			resource.delete(Collections.emptyMap());
+		} catch (IOException e) {
+			// FIXME log exception.
+		}
+	}
+
+	/**
+	 * Indicates whether a non-null resource exists in the source side for the given MatchResource.
+	 * 
+	 * @param matchResource
+	 *            The matchResource
+	 * @param rightToLeft
+	 *            The direction of the merge
+	 * @return true if the given MatchResource has a non-null resource for the side indicated by rightToLeft
+	 *         (i.e. on the left if true, on the right if false).
+	 */
+	protected boolean resourceExistsInSource(MatchResource matchResource, boolean rightToLeft) {
+		boolean existsInTarget;
+		if (rightToLeft) {
+			existsInTarget = matchResource.getRight() != null;
+		} else {
+			existsInTarget = matchResource.getLeft() != null;
+		}
+		return existsInTarget;
 	}
 
 	/**
@@ -447,10 +492,13 @@ public class ResourceAttachmentChangeMerger extends AbstractMerger {
 
 		// if this is a pseudo conflict, we have no value to remove
 		if (expectedValue != null) {
+			final Resource resource = ((InternalEObject)expectedValue).eDirectResource();
 			// We only wish to remove the element from its containing resource, not from its container.
 			// This will not affect the match.
-			final Resource resource = ((InternalEObject)expectedValue).eDirectResource();
 			resource.getContents().remove(expectedValue);
+
+			// We maybe need to delete the former resource
+			deleteFormerResourceIfNecessary(diff.getMatch().getComparison(), resource, rightToLeft);
 		}
 	}
 
