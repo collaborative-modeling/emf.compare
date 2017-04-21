@@ -409,6 +409,8 @@
         <module>../plugins/org.eclipse.emf.compare.diagram.sirius</module>
         <module>../plugins/org.eclipse.emf.compare.diagram.ide.ui.sirius</module>
         <module>../packaging/org.eclipse.emf.compare.diagram.sirius-feature</module>
+
+        <module>../packaging/org.eclipse.emf.compare.tests-feature</module>
       </modules>
     </profile>
     <profile>
