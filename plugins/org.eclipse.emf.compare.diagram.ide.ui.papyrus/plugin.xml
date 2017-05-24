@@ -104,4 +104,12 @@
             ranking="10">
       </contentCustomization>
    </extension>
+   <extension
+         point="org.eclipse.emf.compare.rcp.ui.groups">
+     <group
+            class="org.eclipse.emf.compare.diagram.ide.ui.papyrus.internal.structuremergeviewer.groups.impl.PapyrusGroupProvider"
+            label="Default (Papyrus)"
+            rank="140">
+      </group>
+   </extension>
 </plugin>
