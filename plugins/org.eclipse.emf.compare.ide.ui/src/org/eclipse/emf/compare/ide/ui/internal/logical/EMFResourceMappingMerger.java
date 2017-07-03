@@ -266,6 +266,10 @@ public class EMFResourceMappingMerger implements IResourceMappingMerger {
 		final Comparison comparison = builder.build().compare(scope,
 				BasicMonitor.toMonitor(SubMonitor.convert(subMonitor.newChild(1), 10))); // 50%
 
+		if (comparison.getDiagnostic().getSeverity() == Diagnostic.ERROR) {
+			throwRuntimeExceptionWithDiagnosticError(comparison.getDiagnostic());
+		}
+
 		if (hasRealConflict(comparison)) {
 			failingMappings.add(mapping);
 
@@ -293,6 +297,28 @@ public class EMFResourceMappingMerger implements IResourceMappingMerger {
 		}
 
 		subMonitor.setWorkRemaining(0);
+	}
+
+	/**
+	 * Throws a {@link RuntimeException} with a {@link CoreException} wrapping the most meaningful diagnostic.
+	 * <p>
+	 * If the diagnostic has children, search for one that causes the error status, to provide most meaningful
+	 * error information in the exception.
+	 * </p>
+	 * 
+	 * @param diagnostic
+	 *            The error diagnostic to throw a runtime exception for.
+	 */
+	private void throwRuntimeExceptionWithDiagnosticError(final Diagnostic diagnostic) {
+		for (Diagnostic childDiagnostic : diagnostic.getChildren()) {
+			if (childDiagnostic.getSeverity() == Diagnostic.ERROR) {
+				// found a child with an error, so throw an exception with this diagnostic as we'll get
+				// better error messages when looking at the causing child diagnostic directly
+				throw new RuntimeException(new CoreException(BasicDiagnostic.toIStatus(childDiagnostic)));
+			}
+		}
+		// diagnostic doesn't have children or no error children, so throw exception diagnostic directly
+		throw new RuntimeException(new CoreException(BasicDiagnostic.toIStatus(diagnostic)));
 	}
 
 	/**
