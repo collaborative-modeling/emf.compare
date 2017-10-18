@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2015 Obeo.
+ * Copyright (c) 2013, 2017 Obeo and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,7 +10,9 @@
  *******************************************************************************/
 package org.eclipse.emf.compare.diagram.ide.ui.internal.accessor;
 
+import org.eclipse.emf.compare.Diff;
 import org.eclipse.emf.compare.Match;
+import org.eclipse.emf.compare.diagram.internal.CompareDiagramUtil;
 import org.eclipse.emf.compare.diagram.internal.extensions.DiagramDiff;
 import org.eclipse.emf.compare.rcp.ui.mergeviewer.IMergeViewer.MergeViewerSide;
 import org.eclipse.emf.ecore.EObject;
@@ -23,7 +25,10 @@ import org.eclipse.emf.ecore.EObject;
 public class DiagramDiffAccessorImpl extends DiagramMatchAccessorImpl implements IDiagramDiffAccessor {
 
 	/** A graphical difference. */
-	private DiagramDiff fDiff;
+	private Diff fDiff;
+
+	/** the view of the graphical difference. */
+	private EObject fView;
 
 	/**
 	 * Constructor.
@@ -33,7 +38,7 @@ public class DiagramDiffAccessorImpl extends DiagramMatchAccessorImpl implements
 	 * @param side
 	 *            The side where the change is.
 	 */
-	public DiagramDiffAccessorImpl(DiagramDiff diff, MergeViewerSide side) {
+	public DiagramDiffAccessorImpl(Diff diff, MergeViewerSide side) {
 		super(diff.getMatch(), side);
 		this.fDiff = diff;
 	}
@@ -48,7 +53,7 @@ public class DiagramDiffAccessorImpl extends DiagramMatchAccessorImpl implements
 		return DiagramContentMergeViewerConstants.DIFF_NODE_TYPE;
 	}
 
-	public DiagramDiff getDiff() {
+	public Diff getDiff() {
 		return fDiff;
 	}
 
@@ -58,10 +63,14 @@ public class DiagramDiffAccessorImpl extends DiagramMatchAccessorImpl implements
 	 * @return The view of the diagram difference.
 	 */
 	private EObject getEObject() {
-		if (fDiff != null) {
-			return fDiff.getView();
+		if (fView == null) {
+			if (fDiff instanceof DiagramDiff) {
+				fView = ((DiagramDiff)fDiff).getView();
+			} else {
+				fView = CompareDiagramUtil.getView(fDiff);
+			}
 		}
-		return null;
+		return fView;
 	}
 
 	@Override

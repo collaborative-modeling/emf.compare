@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.emf.compare.diagram.ide.ui.internal.accessor;
 
-import org.eclipse.emf.compare.diagram.internal.extensions.DiagramDiff;
+import org.eclipse.emf.compare.Diff;
 
 /**
  * Input for selection of elements related to a difference.
@@ -24,6 +24,6 @@ public interface IDiagramDiffAccessor extends IDiagramNodeAccessor {
 	 * 
 	 * @return The graphical difference.
 	 */
-	DiagramDiff getDiff();
+	Diff getDiff();
 
 }

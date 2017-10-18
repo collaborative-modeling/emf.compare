@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Obeo.
+ * Copyright (c) 2013, 2107 Obeo and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,7 +11,9 @@
 package org.eclipse.emf.compare.diagram.ide.ui.internal.accessor.factory;
 
 import org.eclipse.emf.common.notify.AdapterFactory;
+import org.eclipse.emf.compare.Diff;
 import org.eclipse.emf.compare.diagram.ide.ui.internal.accessor.DiagramDiffAccessorImpl;
+import org.eclipse.emf.compare.diagram.internal.CompareDiagramUtil;
 import org.eclipse.emf.compare.diagram.internal.extensions.DiagramDiff;
 import org.eclipse.emf.compare.rcp.ui.contentmergeviewer.accessor.legacy.ITypedElement;
 import org.eclipse.emf.compare.rcp.ui.internal.contentmergeviewer.accessor.factory.impl.AbstractAccessorFactory;
@@ -33,7 +35,7 @@ public class DiagramDiffAccessorFactory extends AbstractAccessorFactory {
 	 *            The side of the input to create.
 	 * @return The accessor.
 	 */
-	private ITypedElement createAccessor(DiagramDiff diff, MergeViewerSide side) {
+	private ITypedElement createAccessor(Diff diff, MergeViewerSide side) {
 		return new DiagramDiffAccessorImpl(diff, side);
 	}
 
@@ -43,7 +45,23 @@ public class DiagramDiffAccessorFactory extends AbstractAccessorFactory {
 	 * @see org.eclipse.emf.compare.rcp.ui.contentmergeviewer.accessor.factory.IAccessorFactory#isFactoryFor(java.lang.Object)
 	 */
 	public boolean isFactoryFor(Object target) {
-		return target instanceof DiagramDiff;
+		return target instanceof DiagramDiff || concernsDiagram(target);
+	}
+
+	/**
+	 * Specifies whether the given <code>target</code> is a diff on a match that represents a diagram element.
+	 * 
+	 * @param target
+	 *            The object to test.
+	 * @return <code>true</code> if <code>target</code> is a diff on a diagram match, <code>false</code>
+	 *         otherwise.
+	 */
+	private boolean concernsDiagram(Object target) {
+		if (target instanceof Diff) {
+			Diff diff = (Diff)target;
+			return CompareDiagramUtil.isDiagramMatch(diff.getMatch());
+		}
+		return false;
 	}
 
 	/**
@@ -53,7 +71,7 @@ public class DiagramDiffAccessorFactory extends AbstractAccessorFactory {
 	 *      java.lang.Object)
 	 */
 	public ITypedElement createLeft(AdapterFactory adapterFactory, Object target) {
-		return createAccessor((DiagramDiff)target, MergeViewerSide.LEFT);
+		return createAccessor((Diff)target, MergeViewerSide.LEFT);
 	}
 
 	/**
@@ -63,7 +81,7 @@ public class DiagramDiffAccessorFactory extends AbstractAccessorFactory {
 	 *      java.lang.Object)
 	 */
 	public ITypedElement createRight(AdapterFactory adapterFactory, Object target) {
-		return createAccessor((DiagramDiff)target, MergeViewerSide.RIGHT);
+		return createAccessor((Diff)target, MergeViewerSide.RIGHT);
 	}
 
 	/**
@@ -73,7 +91,7 @@ public class DiagramDiffAccessorFactory extends AbstractAccessorFactory {
 	 *      java.lang.Object)
 	 */
 	public ITypedElement createAncestor(AdapterFactory adapterFactory, Object target) {
-		return createAccessor((DiagramDiff)target, MergeViewerSide.ANCESTOR);
+		return createAccessor((Diff)target, MergeViewerSide.ANCESTOR);
 	}
 
 }

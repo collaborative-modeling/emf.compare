@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 Obeo.
+ * Copyright (c) 2013, 2017 Obeo and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -184,6 +184,13 @@ public class DiagramMatchAccessorImpl implements IDiagramNodeAccessor, ITypedEle
 			diagram = (Diagram)obj;
 		} else if (obj instanceof View) {
 			diagram = ((View)obj).getDiagram();
+		} else {
+			EObject container = obj;
+			while ((container = container.eContainer()) != null) {
+				if (container instanceof View) {
+					diagram = ((View)container).getDiagram();
+				}
+			}
 		}
 		return diagram;
 	}
