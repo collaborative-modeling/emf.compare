@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Obeo.
+ * Copyright (c) 2012, 2017 Obeo and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -55,7 +55,24 @@ public final class AccessorAdapter implements ITypedElement, IStreamContentAcces
 	 * @see org.eclipse.compare.IStreamContentAccessor#getContents()
 	 */
 	public InputStream getContents() throws CoreException {
-		if (target instanceof org.eclipse.emf.compare.rcp.ui.contentmergeviewer.accessor.legacy.IStreamContentAccessor) {
+		// We don't want to return a stream from the stream content accessor if it's being used to determine
+		// or guess a content type. In the former case it's pointless and in the latter case it adds a default
+		// "Text Compare" entry to the switching pane drop down menu, which is not only confusing, because
+		// then there are two (one for the fall back viewer descriptor too) but also useless because it's not
+		// editable anyway.
+		boolean isDeterminingContentType = false;
+		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+		if (stackTrace.length > 2) {
+			StackTraceElement stackTraceElement = stackTrace[2];
+			if ("org.eclipse.compare.internal.CompareUIPlugin".equals(stackTraceElement.getClassName()) //$NON-NLS-1$
+					&& "guessType".equals(stackTraceElement.getMethodName()) //$NON-NLS-1$
+					|| "getContentType".equals(stackTraceElement.getMethodName())) { //$NON-NLS-1$
+				isDeterminingContentType = true;
+			}
+		}
+
+		if (!isDeterminingContentType
+				&& target instanceof org.eclipse.emf.compare.rcp.ui.contentmergeviewer.accessor.legacy.IStreamContentAccessor) {
 			return ((org.eclipse.emf.compare.rcp.ui.contentmergeviewer.accessor.legacy.IStreamContentAccessor)target)
 					.getContents();
 		}
